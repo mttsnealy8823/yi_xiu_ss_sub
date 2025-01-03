@@ -1,21 +1,32 @@
-name: 自动获取ss节点
+name: 获取一些ss节点
 
 on:
-  workflow_dispatch:  # 使工作流支持手动触发
-  push:
-    branches:
-      - main  # 当推送到 main 分支时触发
-  pull_request:
-    branches:
-      - main  # 当创建 PR 到 main 分支时触发
+  workflow_dispatch:  # 手动触发
+  schedule:
+    - cron: '0 */3 * * *'  # 每3小时运行一次
 
 jobs:
   build:
-    runs-on: macos-latest  # 在 macOS 上编译
+    runs-on: macos-latest
 
     steps:
       - name: 获取仓库代码
-        uses: actions/checkout@v3  # 获取代码
+        uses: actions/checkout@v3
 
-      - name: 执行文件点击打开获取ss节点信息
-        run: ./ss
+      - name: 执行脚本并提取ss链接
+        run: |
+          ./ss | awk '/^ss:\/\//{ print $0 }' > out.txt
+
+      - name: 提交更新的out.txt
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add out.txt
+          git commit -m "Update ss links" || exit 0
+          git push
+
+      - name: 上传结果文件
+        uses: actions/upload-artifact@v3
+        with:
+          name: ss-links
+          path: out.txt
