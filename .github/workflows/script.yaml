@@ -3,7 +3,7 @@ name: 自动获取ss节点
 on:
   workflow_dispatch:
   schedule:
-    - cron: '0 */3 * * *'
+    - cron: '0 */6 * * *'
 
 jobs:
   build:
